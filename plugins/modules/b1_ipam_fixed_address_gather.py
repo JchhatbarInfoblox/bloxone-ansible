@@ -126,7 +126,7 @@ def main():
     module.deprecate(
         "This module is being deprecated and will be removed in version 3.0.0. Use the M(ipam_fixed_address_info) module instead.",
         version="3.0.0",
-        collection_name="infoblox.bloxone"
+        collection_name="infoblox.bloxone",
     )
     (is_error, has_changed, result) = choice_map.get(module.params["state"])(module.params)
 
