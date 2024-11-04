@@ -1,0 +1,46 @@
+name: pr
+
+on:
+  pull_request:
+    branches:
+      - v2
+
+jobs:
+  lint:
+    name: linters
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.12
+      - run: |
+          python -m pip install --upgrade pip
+          pip install flynt lint black
+          pip install -r requirements.txt
+
+      - name: Run linters
+        run: make lint
+
+  sanity:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ansible: ['stable-2.15', 'stable-2.16', 'stable-2.17', 'devel']
+        python: ['3.9', '3.10', '3.11', '3.12']
+        exclude:
+          - ansible: 'stable-2.15'
+            python: '3.12'
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          path: infoblox.bloxone
+
+      - uses: ansible-community/ansible-test-gh-action@v1.15.0
+        with:
+          collection-src-directory: infoblox.bloxone
+          ansible-core-version: ${{ matrix.ansible }}
+          target-python-version: ${{ matrix.python }}
+          testing-type: sanity
