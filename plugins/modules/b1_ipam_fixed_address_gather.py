@@ -13,6 +13,10 @@ module: b1_ipam_fixed_address_gather
 author: "Amit Mishra (@amishra)"
 short_description: Configure IP space on Infoblox BloxOne DDI
 version_added: "1.0.1"
+deprecated:
+    removed_in: "3.0.0"
+    why: "This module is being deprecated and will be removed in version 3.0.0."
+    alternative: "Use the M(ipam_fixed_address_info) module instead."
 description:
   - Gather information about a fixed address object on Infoblox BloxOne DDI. This module gathers the fixed_address object using BloxOne REST APIs.
 requirements:
@@ -119,6 +123,11 @@ def main():
     choice_map = {"gather": get_fixed_address}
 
     module = AnsibleModule(argument_spec=argument_spec)
+    module.deprecate(
+        "This module is being deprecated and will be removed in version 3.0.0. Use the M(ipam_fixed_address_info) module instead.",
+        version="3.0.0",
+        collection_name="infoblox.bloxone"
+    )
     (is_error, has_changed, result) = choice_map.get(module.params["state"])(module.params)
 
     if not is_error:

@@ -15,6 +15,10 @@ author: "Amit Mishra (@amishra)"
 contributor: "Chris Marrison (@ccmarris)"
 short_description: Configure fixed address on Infoblox BloxOne DDI
 version_added: "1.1.2"
+deprecated:
+    removed_in: "3.0.0"
+    why: "This module is being deprecated and will be removed in version 3.0.0."
+    alternative: "Use the M(ipam_fixed_address) module instead."
 description:
   - Get, Create, Update and Delete fixed address on Infoblox BloxOne DDI. This module manages the fixed address object using BloxOne REST APIs.
 requirements:
@@ -432,6 +436,11 @@ def main():
     }
 
     module = AnsibleModule(argument_spec=argument_spec)
+    module.deprecate(
+        "This module is being deprecated and will be removed in version 3.0.0. Use the M(ipam_fixed_address) module instead.",
+        version="3.0.0",
+        collection_name="infoblox.bloxone"
+    )
     (is_error, has_changed, result) = choice_map.get(module.params["state"])(module.params)
 
     if not is_error:
