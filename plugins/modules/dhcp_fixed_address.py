@@ -9,7 +9,7 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: ipam_fixed_address_info
+module: dhcp_fixed_address
 short_description: Manage FixedAddress
 description:
     - Manage FixedAddress
@@ -21,42 +21,204 @@ options:
             - ID of the object
         type: str
         required: false
-    filters:
+    state:
         description:
-            - Filter dict to filter objects
-        type: dict
-        required: false
-    filter_query:
-        description:
-            - Filter query to filter objects
-        type: str
-        required: false
-    inherit:
-        description:
-            - Return inheritance information
+            - Indicate desired state of the object
         type: str
         required: false
         choices:
-            - full
-            - partial
-            - none
-        default: full
-    tag_filters:
+            - present
+            - absent
+        default: present
+    address:
         description:
-            - Filter dict to filter objects by tags
-        type: dict
-        required: false
-    tag_filter_query:
-        description:
-            - Filter query to filter objects by tags
+            - "The reserved address."
         type: str
-        required: false
+    comment:
+        description:
+            - "The description for the fixed address. May contain 0 to 1024 characters. Can include UTF-8."
+        type: str
+    dhcp_options:
+        description:
+            - "The list of DHCP options. May be either a specific option or a group of options."
+        type: list
+        elements: dict
+        suboptions:
+            group:
+                description:
+                    - "The resource identifier."
+                type: str
+            option_code:
+                description:
+                    - "The resource identifier."
+                type: str
+            option_value:
+                description:
+                    - "The option value."
+                type: str
+            type:
+                description:
+                    - "The type of item."
+                    - "Valid values are:"
+                    - "* I(group)"
+                    - "* I(option)"
+                type: str
+    disable_dhcp:
+        description:
+            - "Optional. I(true) to disable object. The fixed address is converted to an exclusion when generating configuration."
+            - "Defaults to I(false)."
+        type: bool
+    header_option_filename:
+        description:
+            - "The configuration for header option filename field."
+        type: str
+    header_option_server_address:
+        description:
+            - "The configuration for header option server address field."
+        type: str
+    header_option_server_name:
+        description:
+            - "The configuration for header option server name field."
+        type: str
+    hostname:
+        description:
+            - "The DHCP host name associated with this fixed address. It is of FQDN type and it defaults to empty."
+        type: str
+    inheritance_parent:
+        description:
+            - "The resource identifier."
+        type: str
+    inheritance_sources:
+        description:
+            - "The inheritance configuration."
+        type: dict
+        suboptions:
+            dhcp_options:
+                description:
+                    - "The inheritance configuration for I(dhcp_options) field."
+                type: dict
+                suboptions:
+                    action:
+                        description:
+                            - "The inheritance setting."
+                            - "Valid values are:"
+                            - "* I(inherit): Use the inherited value."
+                            - "* I(block): Don't use the inherited value."
+                            - "Defaults to I(inherit)."
+                        type: str
+                    value:
+                        description:
+                            - "The inherited DHCP option values."
+                        type: list
+                        elements: dict
+                        suboptions:
+                            action:
+                                description:
+                                    - "The inheritance setting."
+                                    - "Valid values are:"
+                                    - "* I(inherit): Use the inherited value."
+                                    - "* I(block): Don't use the inherited value."
+                                    - "Defaults to I(inherit)."
+                                type: str
+            header_option_filename:
+                description:
+                    - "The inheritance configuration for I(header_option_filename) field."
+                type: dict
+                suboptions:
+                    action:
+                        description:
+                            - "The inheritance setting for a field."
+                            - "Valid values are:"
+                            - "* I(inherit): Use the inherited value."
+                            - "* I(override): Use the value set in the object."
+                            - "Defaults to I(inherit)."
+                        type: str
+            header_option_server_address:
+                description:
+                    - "The inheritance configuration for I(header_option_server_address) field."
+                type: dict
+                suboptions:
+                    action:
+                        description:
+                            - "The inheritance setting for a field."
+                            - "Valid values are:"
+                            - "* I(inherit): Use the inherited value."
+                            - "* I(override): Use the value set in the object."
+                            - "Defaults to I(inherit)."
+                        type: str
+            header_option_server_name:
+                description:
+                    - "The inheritance configuration for I(header_option_server_name) field."
+                type: dict
+                suboptions:
+                    action:
+                        description:
+                            - "The inheritance setting for a field."
+                            - "Valid values are:"
+                            - "* I(inherit): Use the inherited value."
+                            - "* I(override): Use the value set in the object."
+                            - "Defaults to I(inherit)."
+                        type: str
+    ip_space:
+        description:
+            - "The resource identifier."
+        type: str
+    match_type:
+        description:
+            - "Indicates how to match the client:"
+            - "* I(mac): match the client MAC address for both IPv4 and IPv6,"
+            - "* I(client_text) or I(client_hex): match the client identifier for IPv4 only,"
+            - "* I(relay_text) or I(relay_hex): match the circuit ID or remote ID in the DHCP relay agent option (82) for IPv4 only,"
+            - "* I(duid): match the DHCP unique identifier, currently match only for IPv6 protocol."
+        type: str
+    match_value:
+        description:
+            - "The value to match."
+        type: str
+    name:
+        description:
+            - "The name of the fixed address. May contain 1 to 256 characters. Can include UTF-8."
+        type: str
+    parent:
+        description:
+            - "The resource identifier."
+        type: str
+    tags:
+        description:
+            - "The tags for the fixed address in JSON format."
+        type: dict
 
 extends_documentation_fragment:
     - infoblox.bloxone.common
-"""  # noqa: E501
+"""
 
 EXAMPLES = r"""
+- name: Create a fixed address
+  infoblox.bloxone.dhcp_fixed_address:
+    address: "10.0.0.1"
+    ip_space: "example_ip_space"
+    match_type: "mac"
+    match_value: "00:00:00:00:00:00"
+    state: "present"
+
+- name: Create a fixed address with generally used params
+  infoblox.bloxone.dhcp_fixed_address:
+    address: "10.0.0.2"
+    ip_space: "{{ _ip_space.id }}"
+    match_type: "mac"
+    match_value: "00:00:00:00:00:01"
+    comment: "test comment"
+    disable_dhcp: true
+    hostname: "test-host-name"
+    state: "present"
+
+- name: Delete a fixed address
+  infoblox.bloxone.dhcp_fixed_address:
+    address: "10.0.01"
+    ip_space: "example_ip_space"
+    match_type: "mac"
+    match_value: "00:00:00:00:00:00"
+    state: "absent"
 """
 
 RETURN = r"""
@@ -65,11 +227,10 @@ id:
         - ID of the FixedAddress object
     type: str
     returned: Always
-objects:
+item:
     description:
         - FixedAddress object
-    type: list
-    elements: dict
+    type: complex
     returned: Always
     contains:
         address:
@@ -396,100 +557,200 @@ objects:
                 - "Time when the object has been updated. Equals to I(created_at) if not updated after creation."
             type: str
             returned: Always
-"""  # noqa: E501
+"""
 
 from ansible_collections.infoblox.bloxone.plugins.module_utils.modules import BloxoneAnsibleModule
 
 try:
     from bloxone_client import ApiException, NotFoundException
-    from ipam import FixedAddressApi
+    from ipam import FixedAddress, FixedAddressApi
 except ImportError:
     pass  # Handled by BloxoneAnsibleModule
 
 
-class FixedAddressInfoModule(BloxoneAnsibleModule):
+class FixedAddressModule(BloxoneAnsibleModule):
     def __init__(self, *args, **kwargs):
-        super(FixedAddressInfoModule, self).__init__(*args, **kwargs)
-        self._existing = None
-        self._limit = 1000
+        super(FixedAddressModule, self).__init__(*args, **kwargs)
 
-    def find_by_id(self):
-        try:
-            resp = FixedAddressApi(self.client).read(self.params["id"], inherit="full")
-            return [resp.result]
-        except NotFoundException as e:
-            return None
+        exclude = ["state", "csp_url", "api_key", "id"]
+        self._payload_params = {k: v for k, v in self.params.items() if v is not None and k not in exclude}
+        self._payload = FixedAddress.from_dict(self._payload_params)
+        self._existing = None
+
+    @property
+    def existing(self):
+        return self._existing
+
+    @existing.setter
+    def existing(self, value):
+        self._existing = value
+
+    @property
+    def payload_params(self):
+        return self._payload_params
+
+    @property
+    def payload(self):
+        return self._payload
+
+    def payload_changed(self):
+        if self.existing is None:
+            # if existing is None, then it is a create operation
+            return True
+
+        return self.is_changed(self.existing.model_dump(by_alias=True, exclude_none=True), self.payload_params)
 
     def find(self):
         if self.params["id"] is not None:
-            return self.find_by_id()
-
-        filter_str = None
-        if self.params["filters"] is not None:
-            filter_str = " and ".join([f"{k}=='{v}'" for k, v in self.params["filters"].items()])
-        elif self.params["filter_query"] is not None:
-            filter_str = self.params["filter_query"]
-
-        tag_filter_str = None
-        if self.params["tag_filters"] is not None:
-            tag_filter_str = " and ".join([f"{k}=='{v}'" for k, v in self.params["tag_filters"].items()])
-        elif self.params["tag_filter_query"] is not None:
-            tag_filter_str = self.params["tag_filter_query"]
-
-        all_results = []
-        offset = 0
-
-        while True:
             try:
-                resp = FixedAddressApi(self.client).list(
-                    offset=offset, limit=self._limit, filter=filter_str, tfilter=tag_filter_str, inherit="full"
-                )
-                all_results.extend(resp.results)
+                resp = FixedAddressApi(self.client).read(self.params["id"], inherit="full")
+                return resp.result
+            except NotFoundException as e:
+                if self.params["state"] == "absent":
+                    return None
+                raise e
+        else:
+            filter = f"address=='{self.params['address']}' and ip_space=='{self.params['ip_space']}'"
+            resp = FixedAddressApi(self.client).list(filter=filter, inherit="full")
+            if len(resp.results) == 1:
+                return resp.results[0]
+            if len(resp.results) > 1:
+                self.fail_json(msg=f"Found multiple FixedAddress: {resp.results}")
+            if len(resp.results) == 0:
+                return None
 
-                if len(resp.results) < self._limit:
-                    break
-                offset += self._limit
+    def create(self):
+        if self.check_mode:
+            return None
 
-            except ApiException as e:
-                self.fail_json(msg=f"Failed to execute command: {e.status} {e.reason} {e.body}")
+        resp = FixedAddressApi(self.client).create(body=self.payload, inherit="full")
+        return resp.result.model_dump(by_alias=True, exclude_none=True)
 
-        return all_results
+    def update(self):
+        if self.check_mode:
+            return None
+
+        resp = FixedAddressApi(self.client).update(id=self.existing.id, body=self.payload, inherit="full")
+        return resp.result.model_dump(by_alias=True, exclude_none=True)
+
+    def delete(self):
+        if self.check_mode:
+            return
+
+        FixedAddressApi(self.client).delete(self.existing.id)
 
     def run_command(self):
-        result = dict(objects=[])
+        result = dict(changed=False, object={}, id=None)
 
-        if self.check_mode:
-            self.exit_json(**result)
+        # based on the state that is passed in, we will execute the appropriate
+        # functions
+        try:
+            self.existing = self.find()
+            item = {}
+            if self.params["state"] == "present" and self.existing is None:
+                item = self.create()
+                result["changed"] = True
+                result["msg"] = "FixedAddress created"
+            elif self.params["state"] == "present" and self.existing is not None:
+                if self.payload_changed():
+                    item = self.update()
+                    result["changed"] = True
+                    result["msg"] = "FixedAddress updated"
+            elif self.params["state"] == "absent" and self.existing is not None:
+                self.delete()
+                result["changed"] = True
+                result["msg"] = "FixedAddress deleted"
 
-        find_results = self.find()
+            if self.check_mode:
+                # if in check mode, do not update the result or the diff, just return the changed state
+                self.exit_json(**result)
 
-        all_results = []
-        for r in find_results:
-            all_results.append(r.model_dump(by_alias=True, exclude_none=True))
+            result["diff"] = dict(
+                before=self.existing.model_dump(by_alias=True, exclude_none=True) if self.existing is not None else {},
+                after=item,
+            )
+            result["object"] = item
+            result["id"] = (
+                self.existing.id if self.existing is not None else item["id"] if (item and "id" in item) else None
+            )
+        except ApiException as e:
+            self.fail_json(msg=f"Failed to execute command: {e.status} {e.reason} {e.body}")
 
-        result["objects"] = all_results
         self.exit_json(**result)
 
 
 def main():
-    # define available arguments/parameters a user can pass to the module
     module_args = dict(
         id=dict(type="str", required=False),
-        filters=dict(type="dict", required=False),
-        filter_query=dict(type="str", required=False),
-        inherit=dict(type="str", required=False, choices=["full", "partial", "none"], default="full"),
-        tag_filters=dict(type="dict", required=False),
-        tag_filter_query=dict(type="str", required=False),
+        state=dict(type="str", required=False, choices=["present", "absent"], default="present"),
+        address=dict(type="str"),
+        comment=dict(type="str"),
+        dhcp_options=dict(
+            type="list",
+            elements="dict",
+            options=dict(
+                group=dict(type="str"),
+                option_code=dict(type="str"),
+                option_value=dict(type="str"),
+                type=dict(type="str"),
+            ),
+        ),
+        disable_dhcp=dict(type="bool"),
+        header_option_filename=dict(type="str"),
+        header_option_server_address=dict(type="str"),
+        header_option_server_name=dict(type="str"),
+        hostname=dict(type="str"),
+        inheritance_parent=dict(type="str"),
+        inheritance_sources=dict(
+            type="dict",
+            options=dict(
+                dhcp_options=dict(
+                    type="dict",
+                    options=dict(
+                        action=dict(type="str"),
+                        value=dict(
+                            type="list",
+                            elements="dict",
+                            options=dict(
+                                action=dict(type="str"),
+                            ),
+                        ),
+                    ),
+                ),
+                header_option_filename=dict(
+                    type="dict",
+                    options=dict(
+                        action=dict(type="str"),
+                    ),
+                ),
+                header_option_server_address=dict(
+                    type="dict",
+                    options=dict(
+                        action=dict(type="str"),
+                    ),
+                ),
+                header_option_server_name=dict(
+                    type="dict",
+                    options=dict(
+                        action=dict(type="str"),
+                    ),
+                ),
+            ),
+        ),
+        ip_space=dict(type="str"),
+        match_type=dict(type="str"),
+        match_value=dict(type="str"),
+        name=dict(type="str"),
+        parent=dict(type="str"),
+        tags=dict(type="dict"),
     )
 
-    module = FixedAddressInfoModule(
+    module = FixedAddressModule(
         argument_spec=module_args,
         supports_check_mode=True,
-        mutually_exclusive=[
-            ["id", "filters", "filter_query"],
-            ["id", "tag_filters", "tag_filter_query"],
-        ],
+        required_if=[("state", "present", ["address", "ip_space", "match_type", "match_value"])],
     )
+
     module.run_command()
 
 
