@@ -9,10 +9,10 @@ __metaclass__ = type
 
 DOCUMENTATION = r"""
 ---
-module: ipam_fixed_address_info
-short_description: Manage FixedAddress
+module: ipam_range_info
+short_description: Manage Range
 description:
-    - Manage FixedAddress
+    - Manage Range
 version_added: 2.0.0
 author: Infoblox Inc. (@infobloxopen)
 options:
@@ -54,32 +54,45 @@ options:
 
 extends_documentation_fragment:
     - infoblox.bloxone.common
-"""  # noqa: E501
+"""
 
 EXAMPLES = r"""
+  - name: Get range information by ID
+    infoblox.bloxone.ipam_range_info:
+      id: "{{range.id}}"
+
+  - name: Get range information with filters
+    infoblox.bloxone.ipam_range_info:
+      filters:
+        start: "192.168.1.0"
+        end: "192.168.1.255"
+
+  - name: Get range information with filters (eg. start , end)
+    infoblox.bloxone.ipam_range_info:
+      filter_query: "start=='10.0.0.1' and end=='10.0.0.100'"
+
+  - name: Get range information with tag filters
+    infoblox.bloxone.ipam_range_info:
+        tag_filters:
+          location: "site-1"
 """
 
 RETURN = r"""
 id:
     description:
-        - ID of the FixedAddress object
+        - ID of the Range object
     type: str
     returned: Always
 objects:
     description:
-        - FixedAddress object
+        - Range object
     type: list
     elements: dict
     returned: Always
     contains:
-        address:
-            description:
-                - "The reserved address."
-            type: str
-            returned: Always
         comment:
             description:
-                - "The description for the fixed address. May contain 0 to 1024 characters. Can include UTF-8."
+                - "The description for the range. May contain 0 to 1024 characters. Can include UTF-8."
             type: str
             returned: Always
         compartment_id:
@@ -90,6 +103,11 @@ objects:
         created_at:
             description:
                 - "Time when the object has been created."
+            type: str
+            returned: Always
+        dhcp_host:
+            description:
+                - "The resource identifier."
             type: str
             returned: Always
         dhcp_options:
@@ -124,30 +142,60 @@ objects:
                     returned: Always
         disable_dhcp:
             description:
-                - "Optional. I(true) to disable object. The fixed address is converted to an exclusion when generating configuration."
+                - "Optional. I(true) to disable object. A disabled object is effectively non-existent when generating configuration."
                 - "Defaults to I(false)."
             type: bool
             returned: Always
-        header_option_filename:
+        end:
             description:
-                - "The configuration for header option filename field."
+                - "The end IP address of the range."
             type: str
             returned: Always
-        header_option_server_address:
+        exclusion_ranges:
             description:
-                - "The configuration for header option server address field."
-            type: str
+                - "The list of all exclusion ranges in the scope of the range."
+            type: list
             returned: Always
-        header_option_server_name:
+            elements: dict
+            contains:
+                comment:
+                    description:
+                        - "The description for the exclusion range. May contain 0 to 1024 characters. Can include UTF-8."
+                    type: str
+                    returned: Always
+                end:
+                    description:
+                        - "The end address of the exclusion range."
+                    type: str
+                    returned: Always
+                start:
+                    description:
+                        - "The start address of the exclusion range."
+                    type: str
+                    returned: Always
+        filters:
             description:
-                - "The configuration for header option server name field."
-            type: str
+                - "The list of all allow/deny filters of the range."
+            type: list
             returned: Always
-        hostname:
-            description:
-                - "The DHCP host name associated with this fixed address. It is of FQDN type and it defaults to empty."
-            type: str
-            returned: Always
+            elements: dict
+            contains:
+                access:
+                    description:
+                        - "The access type of DHCP filter (I(allow) or I(deny))."
+                        - "Defaults to I(allow)."
+                    type: str
+                    returned: Always
+                hardware_filter_id:
+                    description:
+                        - "The resource identifier."
+                    type: str
+                    returned: Always
+                option_filter_id:
+                    description:
+                        - "The resource identifier."
+                    type: str
+                    returned: Always
         id:
             description:
                 - "The resource identifier."
@@ -182,13 +230,13 @@ objects:
             returned: Always
         inheritance_sources:
             description:
-                - "The inheritance configuration."
+                - "The DHCP inheritance configuration for the range."
             type: dict
             returned: Always
             contains:
                 dhcp_options:
                     description:
-                        - "The inheritance configuration for I(dhcp_options) field."
+                        - "The inheritance configuration for the I(dhcp_options) field."
                     type: dict
                     returned: Always
                     contains:
@@ -267,118 +315,9 @@ objects:
                                                 - "The resource identifier."
                                             type: str
                                             returned: Always
-                header_option_filename:
-                    description:
-                        - "The inheritance configuration for I(header_option_filename) field."
-                    type: dict
-                    returned: Always
-                    contains:
-                        action:
-                            description:
-                                - "The inheritance setting for a field."
-                                - "Valid values are:"
-                                - "* I(inherit): Use the inherited value."
-                                - "* I(override): Use the value set in the object."
-                                - "Defaults to I(inherit)."
-                            type: str
-                            returned: Always
-                        display_name:
-                            description:
-                                - "The human-readable display name for the object referred to by I(source)."
-                            type: str
-                            returned: Always
-                        source:
-                            description:
-                                - "The resource identifier."
-                            type: str
-                            returned: Always
-                        value:
-                            description:
-                                - "The inherited value."
-                            type: str
-                            returned: Always
-                header_option_server_address:
-                    description:
-                        - "The inheritance configuration for I(header_option_server_address) field."
-                    type: dict
-                    returned: Always
-                    contains:
-                        action:
-                            description:
-                                - "The inheritance setting for a field."
-                                - "Valid values are:"
-                                - "* I(inherit): Use the inherited value."
-                                - "* I(override): Use the value set in the object."
-                                - "Defaults to I(inherit)."
-                            type: str
-                            returned: Always
-                        display_name:
-                            description:
-                                - "The human-readable display name for the object referred to by I(source)."
-                            type: str
-                            returned: Always
-                        source:
-                            description:
-                                - "The resource identifier."
-                            type: str
-                            returned: Always
-                        value:
-                            description:
-                                - "The inherited value."
-                            type: str
-                            returned: Always
-                header_option_server_name:
-                    description:
-                        - "The inheritance configuration for I(header_option_server_name) field."
-                    type: dict
-                    returned: Always
-                    contains:
-                        action:
-                            description:
-                                - "The inheritance setting for a field."
-                                - "Valid values are:"
-                                - "* I(inherit): Use the inherited value."
-                                - "* I(override): Use the value set in the object."
-                                - "Defaults to I(inherit)."
-                            type: str
-                            returned: Always
-                        display_name:
-                            description:
-                                - "The human-readable display name for the object referred to by I(source)."
-                            type: str
-                            returned: Always
-                        source:
-                            description:
-                                - "The resource identifier."
-                            type: str
-                            returned: Always
-                        value:
-                            description:
-                                - "The inherited value."
-                            type: str
-                            returned: Always
-        ip_space:
-            description:
-                - "The resource identifier."
-            type: str
-            returned: Always
-        match_type:
-            description:
-                - "Indicates how to match the client:"
-                - "* I(mac): match the client MAC address for both IPv4 and IPv6,"
-                - "* I(client_text) or I(client_hex): match the client identifier for IPv4 only,"
-                - "* I(relay_text) or I(relay_hex): match the circuit ID or remote ID in the DHCP relay agent option (82) for IPv4 only,"
-                - "* I(duid): match the DHCP unique identifier, currently match only for IPv6 protocol."
-            type: str
-            returned: Always
-        match_value:
-            description:
-                - "The value to match."
-            type: str
-            returned: Always
         name:
             description:
-                - "The name of the fixed address. May contain 1 to 256 characters. Can include UTF-8."
+                - "The name of the range. May contain 1 to 256 characters. Can include UTF-8."
             type: str
             returned: Always
         parent:
@@ -386,36 +325,149 @@ objects:
                 - "The resource identifier."
             type: str
             returned: Always
+        protocol:
+            description:
+                - "The type of protocol (I(ip4) or I(ip6))."
+            type: str
+            returned: Always
+        space:
+            description:
+                - "The resource identifier."
+            type: str
+            returned: Always
+        space_name:
+            description:
+                - "The name of the IP Space the range belongs to."
+            type: str
+            returned: Always
+        start:
+            description:
+                - "The start IP address of the range."
+            type: str
+            returned: Always
         tags:
             description:
-                - "The tags for the fixed address in JSON format."
+                - "The tags for the range in JSON format."
             type: dict
             returned: Always
+        threshold:
+            description:
+                - "The utilization threshold settings for the range."
+            type: dict
+            returned: Always
+            contains:
+                enabled:
+                    description:
+                        - "Indicates whether the utilization threshold for IP addresses is enabled or not."
+                    type: bool
+                    returned: Always
+                high:
+                    description:
+                        - "The high threshold value for the percentage of used IP addresses relative to the total IP addresses available in the scope of the object. Thresholds are inclusive in the comparison test."
+                    type: int
+                    returned: Always
+                low:
+                    description:
+                        - "The low threshold value for the percentage of used IP addresses relative to the total IP addresses available in the scope of the object. Thresholds are inclusive in the comparison test."
+                    type: int
+                    returned: Always
         updated_at:
             description:
                 - "Time when the object has been updated. Equals to I(created_at) if not updated after creation."
             type: str
             returned: Always
+        utilization:
+            description:
+                - "The utilization statistics of IPV4 addresses for the range."
+            type: dict
+            returned: Always
+            contains:
+                abandon_utilization:
+                    description:
+                        - "The percentage of abandoned IP addresses relative to the total IP addresses available in the scope of the object."
+                    type: int
+                    returned: Always
+                abandoned:
+                    description:
+                        - "The number of IP addresses in the scope of the object which are in the abandoned state (issued by a DHCP server and then declined by the client)."
+                    type: str
+                    returned: Always
+                dynamic:
+                    description:
+                        - "The number of IP addresses handed out by DHCP in the scope of the object. This includes all leased addresses, fixed addresses that are defined but not currently leased and abandoned leases."
+                    type: str
+                    returned: Always
+                free:
+                    description:
+                        - "The number of IP addresses available in the scope of the object."
+                    type: str
+                    returned: Always
+                static:
+                    description:
+                        - "The number of defined IP addresses such as reservations or DNS records. It can be computed as I(static) = I(used) - I(dynamic)."
+                    type: str
+                    returned: Always
+                total:
+                    description:
+                        - "The total number of IP addresses available in the scope of the object."
+                    type: str
+                    returned: Always
+                used:
+                    description:
+                        - "The number of IP addresses used in the scope of the object."
+                    type: str
+                    returned: Always
+                utilization:
+                    description:
+                        - "The percentage of used IP addresses relative to the total IP addresses available in the scope of the object."
+                    type: int
+                    returned: Always
+        utilization_v6:
+            description:
+                - "The utilization of IPV6 addresses in the range."
+            type: dict
+            returned: Always
+            contains:
+                abandoned:
+                    description: "The number of IP addresses in the scope of the object which are in the abandoned state (issued by a DHCP server and then declined by the client)."
+                    type: str
+                    returned: Always
+                dynamic:
+                    description: "The number of IP addresses handed out by DHCP in the scope of the object. This includes all leased addresses, fixed addresses that are defined but not currently leased and abandoned leases."
+                    type: str
+                    returned: Always
+                static:
+                    description: "The number of defined IP addresses such as reservations or DNS records. It can be computed as static = used - dynamic."
+                    type: str
+                    returned: Always
+                total:
+                    description: "The total number of IP addresses available in the scope of the object."
+                    type: str
+                    returned: Always
+                used:
+                    description: "The number of IP addresses used in the scope of the object."
+                    type: str
+                    returned: Always
 """  # noqa: E501
 
 from ansible_collections.infoblox.bloxone.plugins.module_utils.modules import BloxoneAnsibleModule
 
 try:
     from bloxone_client import ApiException, NotFoundException
-    from ipam import FixedAddressApi
+    from ipam import RangeApi
 except ImportError:
     pass  # Handled by BloxoneAnsibleModule
 
 
-class FixedAddressInfoModule(BloxoneAnsibleModule):
+class RangeInfoModule(BloxoneAnsibleModule):
     def __init__(self, *args, **kwargs):
-        super(FixedAddressInfoModule, self).__init__(*args, **kwargs)
+        super(RangeInfoModule, self).__init__(*args, **kwargs)
         self._existing = None
         self._limit = 1000
 
     def find_by_id(self):
         try:
-            resp = FixedAddressApi(self.client).read(self.params["id"], inherit="full")
+            resp = RangeApi(self.client).read(self.params["id"], inherit="full")
             return [resp.result]
         except NotFoundException as e:
             return None
@@ -441,7 +493,7 @@ class FixedAddressInfoModule(BloxoneAnsibleModule):
 
         while True:
             try:
-                resp = FixedAddressApi(self.client).list(
+                resp = RangeApi(self.client).list(
                     offset=offset, limit=self._limit, filter=filter_str, tfilter=tag_filter_str, inherit="full"
                 )
                 all_results.extend(resp.results)
@@ -482,7 +534,7 @@ def main():
         tag_filter_query=dict(type="str", required=False),
     )
 
-    module = FixedAddressInfoModule(
+    module = RangeInfoModule(
         argument_spec=module_args,
         supports_check_mode=True,
         mutually_exclusive=[
